@@ -1,0 +1,220 @@
+name: rllab3
+channels:
+- menpo
+- kne
+- soumith
+- mpastell
+- defaults
+dependencies:
+- appnope=0.1.0=py35_0
+- bleach=1.5.0=py35_0
+- cffi=1.10.0=py35_0
+- click=6.7=py35_0
+- cycler=0.10.0=py35_0
+- decorator=4.0.11=py35_0
+- entrypoints=0.2.3=py35_0
+- flask=0.12.2=py35_0
+- freetype=2.5.5=2
+- h5py=2.7.0=np112py35_0
+- hdf5=1.8.17=2
+- html5lib=0.999=py35_0
+- icu=54.1=0
+- ipykernel=4.6.1=py35_0
+- ipython=6.1.0=py35_0
+- ipython_genutils=0.2.0=py35_0
+- itsdangerous=0.24=py35_0
+- jbig=2.1=0
+- jedi=0.10.2=py35_2
+- jinja2=2.9.6=py35_0
+- jpeg=9b=0
+- jsonschema=2.6.0=py35_0
+- jupyter_client=5.1.0=py35_0
+- jupyter_core=4.3.0=py35_0
+- lasagne=0.1=py35_0
+- libgpuarray=0.6.8=0
+- libpng=1.6.27=0
+- libtiff=4.0.6=3
+- llvmlite=0.19.0=py35_0
+- mako=1.0.6=py35_0
+- markupsafe=0.23=py35_2
+- matplotlib=2.0.2=np112py35_0
+- mistune=0.7.4=py35_0
+- mkl=2017.0.3=0
+- mkl-service=1.1.2=py35_3
+- mpi4py=2.0.0=py35_0
+- nbconvert=5.2.1=py35_0
+- nbformat=4.3.0=py35_0
+- nose=1.3.7=py35_1
+- notebook=5.0.0=py35_0
+- numba=0.34.0=np112py35_0
+- numpy=1.12.0=py35_0
+- olefile=0.44=py35_0
+- openmpi=1.6.3=1
+- openssl=1.0.2l=0
+- pandas=0.20.2=np112py35_0
+- pandocfilters=1.4.1=py35_0
+- path.py=10.3.1=py35_0
+- pexpect=4.2.1=py35_0
+- pickleshare=0.7.4=py35_0
+- pillow=4.2.1=py35_0
+- pip=9.0.1=py35_1
+- prompt_toolkit=1.0.14=py35_0
+- ptyprocess=0.5.1=py35_0
+- pycparser=2.17=py35_0
+- pygments=2.2.0=py35_0
+- pygpu=0.6.8=py35_0
+- pyparsing=2.1.4=py35_0
+- pyqt=5.6.0=py35_2
+- python=3.5.2=0
+- python-dateutil=2.6.0=py35_0
+- pytz=2017.2=py35_0
+- pyzmq=16.0.2=py35_0
+- qt=5.6.2=2
+- readline=6.2=2
+- requests=2.14.2=py35_0
+- scikit-learn=0.18.2=np112py35_0
+- scipy=0.19.1=np112py35_0
+- setuptools=27.2.0=py35_0
+- simplegeneric=0.8.1=py35_1
+- sip=4.18=py35_0
+- six=1.10.0=py35_0
+- sqlite=3.13.0=0
+- terminado=0.6=py35_0
+- testpath=0.3.1=py35_0
+- theano=0.9.0=py35_0
+- tk=8.5.18=0
+- tornado=4.5.1=py35_0
+- traitlets=4.3.2=py35_0
+- wcwidth=0.1.7=py35_0
+- werkzeug=0.12.2=py35_0
+- wheel=0.29.0=py35_0
+- xz=5.2.2=1
+- zlib=1.2.8=3
+- pybox2d=2.3.1post2=py35_0
+- pygame=1.9.2a0=py35_0
+- ipywidgets=5.1.5=py35_0
+- joblib=0.10.3=py35_0
+- opencv3=3.1.0=py35_0
+- tbb=4.3_20141023=0
+- widgetsnbextension=1.2.3=py35_1
+- pytorch=0.1.9=py35_2
+- torchvision=0.1.6=py35_19
+- pip:
+  - ad3==2.0.2
+  - alabaster==0.7.10
+  - apipkg==1.4
+  - appdirs==1.4.3
+  - argon2-cffi==16.3.0
+  - arrow==0.10.0
+  - asn1crypto==0.22.0
+  - atari-py==0.1.1
+  - awscli==1.11.123
+  - babel==2.4.0
+  - binaryornot==0.4.0
+  - box2d==2.3.1
+  - cached-property==1.3.0
+  - cchardet==2.0.0
+  - chainer==1.18.0
+  - chameleon==3.1
+  - chardet==2.3.0
+  - check-manifest==0.35
+  - cloudpickle==0.3.1
+  - colorama==0.3.7
+  - cookiecutter==1.5.1
+  - cryptography==1.8.1
+  - cvxopt==1.1.8
+  - cython==0.26
+  - dconn (/Users/btabanpour/anaconda/envs/ml/lib/python3.5/site-packages)==0.6.dev5
+  - defusedxml==0.5.0
+  - devpi-client==3.0.0
+  - devpi-common==3.1.0
+  - devpi-server==4.3.0
+  - devpi-web==3.2.0
+  - dill==0.2.5
+  - docopt==0.6.2
+  - enum34==1.1.6
+  - execnet==1.4.1
+  - fabric3==1.13.1.post1
+  - filelock==2.0.11
+  - flask-cors==3.0.3
+  - future==0.16.0
+  - glfw==1.4.0
+  - gym==0.7.4
+  - hupper==0.4.4
+  - hyperopt==0.1
+  - idna==2.5
+  - imageio==2.2.0
+  - imagesize==0.7.1
+  - ipdb==0.10.3
+  - ipython-genutils==0.2.0
+  - jinja2-time==0.2.0
+  - jupyter==1.0.0
+  - jupyter-client==5.1.0
+  - jupyter-console==5.1.0
+  - jupyter-core==4.3.0
+  - line-profiler==2.0
+  - mock==2.0.0
+  - msgpack-python==0.4.8
+  - mujoco-py==0.5.7
+  - mwparserfromhell==0.4.4
+  - networkx==1.11
+  - nibabel==2.1.0
+  - nine==1.0.0
+  - nltk==3.2.2
+  - nose2==0.6.5
+  - numpy-stl==2.2.0
+  - packaging==16.8
+  - paramiko==2.1.2
+  - passlib==1.7.1
+  - pastedeploy==1.5.2
+  - pbr==3.1.1
+  - pkginfo==1.4.1
+  - plotly==1.9.6
+  - pluggy==0.4.0
+  - polling==0.3.0
+  - poyo==0.4.1
+  - prettytensor==0.6.2
+  - progressbar2==3.32.0
+  - prometheus-client==0.0.19
+  - prompt-toolkit==1.0.14
+  - protobuf==3.2.0
+  - py==1.4.33
+  - pyglet==1.2.4
+  - pylru==1.0.9
+  - pyopengl==3.1.0
+  - pyprind==2.11.1
+  - pyramid==1.8.3
+  - pyramid-chameleon==0.3
+  - pystruct==0.2.4
+  - python-levenshtein==0.12.0
+  - python-utils==2.2.0
+  - qtconsole==4.2.1
+  - rake-nltk==1.0.0
+  - readme-renderer==17.2
+  - redis==2.10.5
+  - repoze.lru==0.6
+  - rllab (/Users/btabanpour/rllab)==0.1.0
+  - seaborn==0.7.1
+  - setupext==0.24.8
+  - setupext-gitversion==1.1.0+sqsp
+  - snowballstemmer==1.2.1
+  - sphinx==1.5.5
+  - striatum==0.2.5
+  - tensorflow==0.12.1
+  - tensorflow-gpu==1.0.1
+  - torch==0.1.9+aaf41c6
+  - tox==2.7.0
+  - tqdm==4.15.0
+  - translationstring==1.3
+  - venusian==1.1.0
+  - virtualenv==15.1.0
+  - vulture==0.14
+  - waitress==1.0.2
+  - webencodings==0.5.1
+  - webob==1.7.2
+  - whichcraft==0.4.0
+  - whoosh==2.7.4
+  - zope.deprecation==4.2.0
+  - zope.interface==4.4.0
+prefix: /Users/btabanpour/anaconda/envs/rllab3
+
