@@ -30,6 +30,5 @@ git clone https://github.com/btaba/button-showdown
 cd button-showdown
 pip install -r requirements.txt
 
-pip install uwsgi
-
-
+# server stuff
+sudo apt-get install python-dev python-pip nginx
