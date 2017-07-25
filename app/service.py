@@ -35,7 +35,8 @@ CONFIG = {
     'mean_rewards': [],
     'max_bad_buttons_to_update': 5
 }
-SNAPSHOT_DIR = os.path.join(os.path.expanduser('~'), '/rllab/experiments{}')
+home = os.path.expanduser('~')
+SNAPSHOT_DIR = os.path.join(home, 'rllab/experiments{}')
 
 
 def listify_dict(d):
