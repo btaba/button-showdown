@@ -29,13 +29,13 @@ CONFIG = {
     'agent_dict': {},
     'batch_size': 20,
     'batch': [],
-    'max_bad_updates': 5,
+    'max_bad_updates': 60,
     'num_bad_updates': 0,
     'noise': 0.5,
     'mean_rewards': [],
     'max_bad_buttons_to_update': 5
 }
-SNAPSHOT_DIR = '/Users/btabanpour/rllab/experiments{}'
+SNAPSHOT_DIR = os.path.join(os.path.expanduser('~'), '/rllab/experiments{}')
 
 
 def listify_dict(d):
@@ -138,6 +138,7 @@ def update_in_batch(path):
             return
 
         rewards = list(map(lambda x: x['rewards'], CONFIG['batch']))
+        print('rewards are ', rewards)
         mean_reward = np.mean(rewards)
         CONFIG['mean_rewards'].append(mean_reward)
         print('Mean reward at itr {} is {}'.format(

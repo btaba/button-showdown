@@ -27,7 +27,6 @@ cryptography==1.8.1
 cvxopt==1.1.8
 cycler==0.10.0
 Cython==0.26
-dconn==0.6.dev5
 decorator==4.0.11
 defusedxml==0.5.0
 devpi-client==3.0.0
