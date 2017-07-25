@@ -75,6 +75,7 @@ torchvision==0.1.6
 tornado==4.5.1
 tqdm==4.15.0
 traitlets==4.3.2
+uWSGI==2.0.15
 wcwidth==0.1.7
 Werkzeug==0.12.2
 widgetsnbextension==1.2.3
