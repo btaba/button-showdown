@@ -5,6 +5,7 @@ import datetime
 import json
 import click
 import numpy as np
+import joblib
 
 from rllab.misc import tensor_utils
 from rllab.algos.trpo import TRPO
@@ -33,7 +34,8 @@ CONFIG = {
     'num_bad_updates': 0,
     'noise': 0.5,
     'mean_rewards': [],
-    'max_bad_buttons_to_update': 5
+    'max_bad_buttons_to_update': 5,
+    'file_to_load_policy': ''
 }
 home = os.path.expanduser('~')
 SNAPSHOT_DIR = os.path.join(home, 'rllab/experiments{}')
@@ -213,6 +215,27 @@ def init_agent(num_obs=1, num_actions=1):
     algo.train_from_single_sample([path])
 
 
+def init_agent_from_file():
+    filename = CONFIG['file_to_load_policy']
+    print('loading model from file', filename)
+    params = joblib.load(filename)
+    CONFIG['agent_dict']['env'] = params['env']
+    CONFIG['agent_dict']['agent'] = params['algo']
+    CONFIG['agent_dict']['policy'] = params['policy']
+    CONFIG['snapshot_dir_itr'] = params['itr'] + 1
+    CONFIG['snapshot_dir'] = os.path.dirname(filename)
+    CONFIG['num_actions'] = params['env'].action_dim
+    CONFIG['num_observations'] = params['env'].observation_space.shape[0]
+
+    # create data file
+    file = 'data{}_act{}_obs{}.json'.format(
+        CONFIG['snapshot_dir_itr'], CONFIG['num_actions'],
+        CONFIG['num_observations'])
+    CONFIG['data_file'] = os.path.join(CONFIG['snapshot_dir'], file)
+    file = open(CONFIG['data_file'], 'w')
+    file.close()
+
+
 def mse(x, y):
     return np.mean((x - y)**2)
 
@@ -259,7 +282,11 @@ FLASK APP
 
 def configure_app(flask_app):
     CORS(flask_app)
-    init_agent()
+
+    if CONFIG['file_to_load_policy'] == '':
+        init_agent()
+    else:
+        init_agent_from_file()
 
 
 # Needs to be external for gunicorn
