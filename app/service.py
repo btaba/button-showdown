@@ -368,5 +368,12 @@ def init_networks():
     return 'ok', 200
 
 
+@click.command()
+@click.option('--server-port', default=8080, help='server port')
+def start_app(server_port):
+    logger.info('STarting on ', server_port)
+    app.run(port=server_port)
+
+
 if __name__ == '__main__':
-    app.run()
+    start_app()
