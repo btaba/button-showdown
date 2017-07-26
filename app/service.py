@@ -304,7 +304,7 @@ configure_app(app)
 
 @app.route('/')
 def health():
-    return 'ok', 200
+    return jsonify({'status': 'ok'}), 200
 
 
 @app.route('/get_action', methods=['POST'])
@@ -315,7 +315,7 @@ def get_action():
     n_bads = req.get('n_bads', 1)
     
     if not validate_obs_dim(obs):
-        return 'invalid input obs', 400
+        return jsonify({'status': 'invalid input obs'}), 400
 
     action, agent_info = CONFIG['agent_dict']['policy'].get_action(obs)
     agent_info = listify_dict(agent_info)
@@ -397,7 +397,7 @@ def update_policy_from_game():
     for u in unpicked_buttons[:num_to_update]:
         update_policy(obs, u['action'], u['agent_info'], [-1])
 
-    return 'ok', 200
+    return jsonify({'status': 'ok'}), 200
 
 
 @app.route('/init_networks', methods=['POST'])
@@ -406,7 +406,7 @@ def init_networks():
     num_actions = req.get('num_actions')
     num_obs = req.get('num_observations')
     init_agent(num_obs, num_actions)
-    return 'ok', 200
+    return jsonify({'status': 'ok'}), 200
 
 
 @click.command()
