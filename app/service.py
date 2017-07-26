@@ -7,6 +7,7 @@ import click
 import numpy as np
 import joblib
 
+from collections import defaultdict
 from rllab.misc import tensor_utils
 from rllab.algos.trpo import TRPO
 from rllab.baselines.linear_feature_baseline import LinearFeatureBaseline
@@ -97,21 +98,32 @@ def validate_obs_dim(obs):
 def make_path(r, obs, action, agent_info):
     path = dict()
     path["rewards"] = tensor_utils.stack_tensor_list(r)
-    path["observations"] = tensor_utils.stack_tensor_list([obs])
-    path["actions"] = tensor_utils.stack_tensor_list([action])
+    path["observations"] = tensor_utils.stack_tensor_list(obs)
+    path["actions"] = tensor_utils.stack_tensor_list(action)
     path["env_infos"] = {}
-    path["agent_infos"] = tensor_utils.stack_tensor_dict_list([agent_info])
+    path["agent_infos"] = tensor_utils.stack_tensor_dict_list(agent_info)
     return path
 
 
 def update_policy(obs, action, agent_info, reward):
     """
-    Update the policy based on one observation, action, reward pair
+    Update the policy
     """
+    if len(np.array(obs).shape) == 1:
+        obs = np.array([obs])
+    else:
+        obs = np.array(obs)
 
-    obs = np.array(obs)
-    action = np.array(action)
-    arrayify_dict(agent_info)
+    if len(np.array(action).shape) == 1:
+        action = np.array([action])
+    else:
+        action = np.array(action)
+
+    if isinstance(agent_info, list):
+        [arrayify_dict(a) for a in agent_info]
+    else:
+        arrayify_dict(agent_info)
+        agent_info = [agent_info]
     r = np.array(reward)
 
     path = make_path(r, obs, action, agent_info)
@@ -218,7 +230,7 @@ def init_agent(num_obs=1, num_actions=1):
     # train from a single samples to load the graph
     obs = env.observation_space.sample()
     action, agent_info = algo.policy.get_action(obs)
-    path = make_path(np.array([1.]), obs, action, agent_info)
+    path = make_path(np.array([1.]), [obs], [action], [agent_info])
     algo.train_from_single_sample([path])
 
 
@@ -271,7 +283,6 @@ def add_noise_to_action_array(x, noise):
     # give the mean point, generate a random point close to it, with the std being `noise` / 2.
     x_prime = np.random.multivariate_normal(x, np.diag([noise / 2.] * len(x)))
     x_prime = np.clip(x_prime, -1, 1)
-    # print(x_prime)
 
     # any -1, or 1 values should be moved back into the space by some random value
     edge_interval = noise * 0.1
@@ -307,8 +318,70 @@ def health():
     return jsonify({'status': 'ok'}), 200
 
 
+@app.route('/init_networks', methods=['POST'])
+def init_networks():
+    req = request.get_json()
+    num_actions = req.get('num_actions')
+    num_obs = req.get('num_observations')
+    init_agent(num_obs, num_actions)
+    return jsonify({'status': 'ok'}), 200
+
+
+@app.route('/get_multi_action', methods=['POST'])
+def get_multiple_actions():
+    """
+    Get multiple actions by feeding each action as the next observation
+    """
+    req = request.get_json()
+    obs = req.get('observation')
+    noise = req.get('noise', CONFIG['noise'])
+    n_bads = req.get('n_bads', 1)
+    n_actions = req.get('n_actions', 1)
+    
+    if not validate_obs_dim(obs):
+        return jsonify({'status': 'invalid input obs'}), 400
+
+    # get n_actions by feeding in each subsequent action as the next observation
+    observations = []
+    agent_infos = []
+    next_obs = obs.copy()
+    good_dict = defaultdict(list)
+    for n in range(n_actions):
+        observations.append(list(next_obs))
+        action, agent_info = CONFIG['agent_dict']['policy'].get_action(next_obs)
+        agent_info = listify_dict(agent_info)
+        agent_infos.append(agent_info)
+        action = np.clip(action, -1, 1)
+        next_obs = np.copy(action)
+        good_dict['actions'].append(list(action))
+    good_dict['agent_info'] = agent_infos
+    good_dict['action'] = list(np.concatenate(good_dict['actions']))
+    good_dict['observations'] = observations
+
+    # format bad response
+    action = good_dict['action']
+    bad_button_list = []
+    for i in range(n_bads):
+        bad_action = add_noise_to_action_array(action, noise)
+        bad_dict = dict()
+        bad_dict['action'] = list(bad_action)
+        bad_dict['agent_info'] = agent_infos
+        bad_dict['observations'] = observations
+        bad_dict['actions'] = bad_action.reshape(n_actions, len(obs)).tolist()
+        bad_button_list.append(bad_dict)
+
+    resp = {
+        'good': good_dict,
+        'bad': bad_button_list
+    }
+    return jsonify(resp), 200
+
+
 @app.route('/get_action', methods=['POST'])
 def get_action():
+    """
+    Get a single action
+    """
     req = request.get_json()
     obs = req.get('observation')
     noise = req.get('noise', CONFIG['noise'])
@@ -324,17 +397,19 @@ def get_action():
     # format response
     good_dict = dict()
     good_dict['action'] = list(action)
+    good_dict['actions'] = list(action)
     good_dict['agent_info'] = agent_info
+    good_dict['observations'] = [obs]
     
     # format bad response
     bad_button_list = []
     for i in range(n_bads):
-        # bad_action = action + noise * np.random.randn(len(action))
         bad_action = add_noise_to_action_array(action, noise)
-        # bad_action = np.clip(bad_action, -1, 1)
         bad_dict = dict()
         bad_dict['action'] = list(bad_action)
+        bad_dict['actions'] = list(bad_action)
         bad_dict['agent_info'] = agent_info
+        bad_dict['observations'] = [obs]
         bad_button_list.append(bad_dict)
 
     resp = {
@@ -352,36 +427,66 @@ def get_random_obs():
 
 @app.route('/update_policy_from_game', methods=['POST'])
 def update_policy_from_game():
+    """
+    Update the policy from a sequence of actions taken
+    """
     req = request.get_json()
     button_list = req.get('button_list')
-    obs = req.get('observation')
-
-    if not validate_obs_dim(obs):
-        return 'invalid input obs', 400
 
     # get the button that was picked
-    picked_button = None
-    unpicked_buttons = []
+    good_button = list(filter(lambda x: x['isGood'], button_list))[0]
+    other_buttons = filter(lambda x: not x['isGood'], button_list)
 
     picked_correct = 0
-    for b in button_list:
+    if good_button['picked']:
+        picked_correct = 1
+    # record whether the user picked the button we predicted given the context
+    CONFIG['picked_correct'].append(picked_correct)
+
+    picked_button = None
+    unpicked_buttons = []
+    for b in other_buttons:
         if b['picked'] is True:
             picked_button = b
-            if b['isGood'] is True:
-                picked_correct = 1
         else:
             unpicked_buttons.append(b)
 
-    # record whether the user picked the button we predicted given the context
-    CONFIG['picked_correct'].append(picked_correct)
+    if good_button['picked']:
+        picked_button = good_button
 
     if picked_button is None:
         return 'no button was picked', 400
 
-    # the picked button gets a reward of 1
-    update_policy(obs, picked_button['action'], picked_button['agent_info'], [1])
+    num_steps = len(picked_button['observations'])
+    if good_button['picked']:
+        # reward the good button since it was picked
+        mses = map(
+            lambda x: mse(np.array(x['action']), good_button['action']),
+            unpicked_buttons)
 
-    # update policy with unpicked buttons that are maximally far from the button
+        r = np.mean(list(mses))
+        update_policy(
+            good_button['observations'], good_button['actions'],
+            good_button['agent_info'], [r] * num_steps)
+    elif not good_button['picked']:
+        # reward the picked button
+        mses = map(
+            lambda x: mse(np.array(x['action']), picked_button['action']),
+            unpicked_buttons + [good_button])
+        r = np.mean(list(mses))
+        print('reward for picked button is ', r)
+        update_policy(
+            picked_button['observations'], picked_button['actions'],
+            picked_button['agent_info'], [r] * num_steps)
+
+        # penalize the good button
+        mses = mse(np.array(picked_button['action']), good_button['action'])
+        mses *= -1
+        update_policy(
+            good_button['observations'], good_button['actions'],
+            good_button['agent_info'], [mses] * num_steps)
+
+    # penalize button that were unpicked and that are maximally far from the button
     # that was picked
     mses = map(
         lambda x: mse(np.array(x['action']), picked_button['action']),
@@ -390,29 +495,23 @@ def update_policy_from_game():
         zip(unpicked_buttons, mses),
         key=lambda x: x[1],
         reverse=True)
+    mses = list(map(lambda x: x[1], unpicked_buttons))
     unpicked_buttons = list(map(lambda x: x[0], unpicked_buttons))
 
     num_unpicked = len(unpicked_buttons)
     num_to_update = min(num_unpicked, CONFIG['max_bad_buttons_to_update'])
-    for u in unpicked_buttons[:num_to_update]:
-        update_policy(obs, u['action'], u['agent_info'], [-1])
+    for idx, u in enumerate(unpicked_buttons[:num_to_update]):
+        update_policy(
+            u['observations'], u['actions'],
+            u['agent_info'], [-mses[idx]] * num_steps)
 
-    return jsonify({'status': 'ok'}), 200
-
-
-@app.route('/init_networks', methods=['POST'])
-def init_networks():
-    req = request.get_json()
-    num_actions = req.get('num_actions')
-    num_obs = req.get('num_observations')
-    init_agent(num_obs, num_actions)
     return jsonify({'status': 'ok'}), 200
 
 
 @click.command()
 @click.option('--server-port', default=8080, help='server port')
 def start_app(server_port):
-    logger.info('STarting on ', server_port)
+    logger.info('Starting on ', server_port)
     app.run(port=server_port)
 
 
