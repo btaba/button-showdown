@@ -33,7 +33,7 @@ CONFIG = {
     'max_bad_updates': 60,
     'num_bad_updates': 0,
     'noise': 0.5,
-    'mean_rewards': [],
+    'picked_correct': [],
     'max_bad_buttons_to_update': 5,
     'file_to_load_policy': ''
 }
@@ -140,22 +140,26 @@ def update_in_batch(path):
             print('Update step was bad, skipping, but saving data')
             return
 
-        rewards = list(map(lambda x: x['rewards'], CONFIG['batch']))
-        print('rewards are ', rewards)
-        mean_reward = np.mean(rewards)
-        CONFIG['mean_rewards'].append(mean_reward)
+        mean_reward = np.mean(CONFIG['picked_correct'])
         print('Mean reward at itr {} is {}'.format(
             CONFIG['snapshot_dir_itr'], mean_reward))
+        f_str = '{}\t{}\n'.format(CONFIG['snapshot_dir_itr'], mean_reward)
+        with open(CONFIG['reward_file'], 'a') as f:
+            f.write(f_str)
         CONFIG['snapshot_dir_itr'] += 1
+        if len(CONFIG['picked_correct']) >= 5 * CONFIG['batch_size']:
+            CONFIG['picked_correct'] = CONFIG['picked_correct'][-4 * CONFIG['batch_size']:]
+
+        print('Saving data to ', CONFIG['data_file'])
+        f_str = ''
+        for path in CONFIG['batch']:
+            path = listify_dict(path)
+            f_str += json.dumps(path) + '\n'
+
+        with open(CONFIG['data_file'], 'a') as f:
+            f.write(f_str)
 
         CONFIG['batch'] = []
-
-    print('Saving data to ', CONFIG['data_file'])
-    path_copy = dict(path)
-    path_copy = listify_dict(path_copy)
-    with open(CONFIG['data_file'], 'a') as f:
-        f.write(json.dumps(path_copy))
-        f.write('\n')
 
 
 def init_agent(num_obs=1, num_actions=1):
@@ -175,6 +179,9 @@ def init_agent(num_obs=1, num_actions=1):
     file.close()
     print('Made data file at ', CONFIG['data_file'])
     CONFIG['snapshot_dir_itr'] += 1
+
+    # make reward monitoring file
+    CONFIG['reward_file'] = os.path.join(CONFIG['snapshot_dir'], 'reward_monitoring.txt')
 
     CONFIG['num_actions'] = num_actions
     CONFIG['num_observations'] = num_obs
@@ -224,6 +231,7 @@ def init_agent_from_file():
     CONFIG['agent_dict']['policy'] = params['policy']
     CONFIG['snapshot_dir_itr'] = params['itr'] + 1
     CONFIG['snapshot_dir'] = os.path.dirname(filename)
+    CONFIG['reward_file'] = os.path.join(CONFIG['snapshot_dir'], 'reward_monitoring.txt')
     CONFIG['num_actions'] = params['env'].action_dim
     CONFIG['num_observations'] = params['env'].observation_space.shape[0]
 
@@ -355,11 +363,17 @@ def update_policy_from_game():
     picked_button = None
     unpicked_buttons = []
 
+    picked_correct = 0
     for b in button_list:
         if b['picked'] is True:
             picked_button = b
+            if b['isGood'] is True:
+                picked_correct = 1
         else:
             unpicked_buttons.append(b)
+
+    # record whether the user picked the button we predicted given the context
+    CONFIG['picked_correct'].append(picked_correct)
 
     if picked_button is None:
         return 'no button was picked', 400
