@@ -30,7 +30,7 @@ CONFIG = {
     'agent_dict': {},
     'batch_size': 20,
     'batch': [],
-    'max_bad_updates': 60,
+    'max_bad_updates_before_purge': 60,
     'num_bad_updates': 0,
     'noise': 0.5,
     'picked_correct': [],
@@ -132,7 +132,7 @@ def update_in_batch(path):
         if not good_update:
             CONFIG['num_bad_updates'] += 1
 
-            if CONFIG['num_bad_updates'] > CONFIG['max_bad_updates']:
+            if CONFIG['num_bad_updates'] > CONFIG['max_bad_updates_before_purge']:
                 print('Did max bad updates, purging batch data')
                 CONFIG['batch'] = []
                 return
