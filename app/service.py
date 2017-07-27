@@ -39,7 +39,7 @@ CONFIG = {
     'file_to_load_policy': ''
 }
 home = os.path.expanduser('~')
-SNAPSHOT_DIR = os.path.join(home, 'rllab/experiments{}')
+SNAPSHOT_DIR = os.path.join(home, 'rllab/experiments_{}_{}')
 
 
 def listify_dict(d):
@@ -174,10 +174,15 @@ def update_in_batch(path):
         CONFIG['batch'] = []
 
 
-def init_agent(num_obs=1, num_actions=1):
+def init_agent(num_obs=1, num_actions=1, network_name='', hidden_sizes=(32, 32)):
+
+    msg = 'initing network with num_actions={}, num_obs={}, network_name={}, hidden_sizes={}'
+    print(msg.format(num_actions, num_obs, network_name, hidden_sizes))
+
     # set the snapshot dir stuff
     datetime_str = datetime.datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
-    CONFIG['snapshot_dir'] = SNAPSHOT_DIR.format(datetime_str)
+    CONFIG['snapshot_dir'] = SNAPSHOT_DIR.format(
+        network_name, datetime_str)
 
     os.makedirs(CONFIG['snapshot_dir'], exist_ok=True)
     print('Making new network on ', datetime_str,
@@ -206,7 +211,7 @@ def init_agent(num_obs=1, num_actions=1):
 
     policy = GaussianMLPPolicy(
         env_spec=env.spec,
-        hidden_sizes=(32, 32),
+        hidden_sizes=hidden_sizes,
         adaptive_std=True
     )
 
@@ -323,7 +328,19 @@ def init_networks():
     req = request.get_json()
     num_actions = req.get('num_actions')
     num_obs = req.get('num_observations')
-    init_agent(num_obs, num_actions)
+    network_name = req.get('network_name', 'default')
+    hidden_sizes = req.get('hidden_sizes', (32, 32))
+
+    if not isinstance(network_name, str):
+        msg = 'network_name is not a string: {}'.format(network_name)
+        return jsonify({'status': msg}), 400
+
+    if not isinstance(hidden_sizes, list) and\
+            not isinstance(hidden_sizes, tuple):
+        msg = 'hidden_sizes is not a tuple: {}'.format(hidden_sizes)
+        return jsonify({'status': msg}), 400
+
+    init_agent(num_obs, num_actions, network_name, hidden_sizes)
     return jsonify({'status': 'ok'}), 200
 
 
